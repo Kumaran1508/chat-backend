@@ -3,3 +3,7 @@ dist/
 logs/
 
 src/environments/
+
+package-lock.json
+
+*.env

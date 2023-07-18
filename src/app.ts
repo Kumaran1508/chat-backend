@@ -1,14 +1,27 @@
-import express, {Application,Request,Response,json} from 'express';
-import http from 'http';
-import { AuthController } from './controllers';
+import "reflect-metadata";
+import express, {Application,Request,Response} from 'express';
+import {createServer} from 'http'
+import { AuthController, MessageController } from './controllers';
 import Log from './util/logger';
-
+import { Server } from 'socket.io';
+import { config } from 'dotenv';
+import { container } from 'tsyringe';
+import { AuthService } from "./services";
+import UserDao from "./dao/user.dao";
 
 const app : Application = express();
 const port : Number = 3000;
+const httpServer = createServer(app);
+const socketServer = new Server(httpServer,{
+    cors:{origin:"*"}
+});
 Log.createInstance();
+config();
 
-const authController : AuthController = new AuthController();
+
+let authController = container.resolve(AuthController);
+
+const messageController : MessageController = new MessageController(socketServer);
 
 app.get("/",
     async (req: Request, res: Response) => {
@@ -22,9 +35,11 @@ app.get("/",
 app.use('/auth',authController.router);
 
 try {
-    app.listen(port, (): void => {
+    httpServer.listen(port, (): void => {
         Log.debug(`Connected successfully on port ${port}`);
     });
+    
+
 } catch (error) {
     Log.debug(`Error occured: ${error.message}`);
 }

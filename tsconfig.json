@@ -9,7 +9,9 @@
         "rootDir": ".",
         "sourceMap": true,
         "strict": false,
-        "allowJs": true
+        "allowJs": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
     },
     "include": ["src/**/*", "app.ts"]
 }

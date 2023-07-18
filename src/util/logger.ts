@@ -27,9 +27,18 @@ export default class Log {
 
     public static debug(message:string){
         this.logger.debug(message);
+    }
+
+    public static info(message:string){
         this.logger.info(message);
-        this.logger.error(message);
+    }
+
+    public static warn(message:string){
         this.logger.warn(message);
+    }
+
+    public static error(message:string){
+        this.logger.error(message);
     }
 
 
