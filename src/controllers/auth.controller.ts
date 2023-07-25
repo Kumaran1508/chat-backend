@@ -1,68 +1,54 @@
-import express, { Router, Request,Response } from 'express';
-import DatabaseUtil from '../util/db.util';
+import  { Router, Request,Response } from 'express';
 import { autoInjectable, container, inject, injectable } from 'tsyringe';
 import { AuthService } from '../services';
-import { UserSignup } from '../interfaces/signup.interface';
 import Log from '../util/logger';
+import { UserLogin, UserSignup } from '../interfaces/auth.interface';
 
-@injectable()
+@autoInjectable()
 export default class AuthController {
-    router : Router;
 
     constructor(
-        @inject(AuthService)
-        private authService:AuthService
-    ) {
-        this.router = express.Router();
-        this.initializeRoutes();
-    }
-
-    initializeRoutes() {
-        this.router.get('/',this.getAuthBase)
-        this.router.get('/login',this.login)
-        this.router.get('/check-username',this.checkUsername)
-        this.router.post('/signup',this.signup)
-    }
+        private authService?:AuthService
+    ) {}
 
     async signup(request : Request, response : Response) {
-        const user : UserSignup = request.body;
-    }
-
-    async checkUsername(request : Request, response : Response) {
-        const username = request.query.username as string;
-        Log.info(`${username}`);
-        const available = await this.authService.checkUsernameAvailability(username);
-        if(username){
-            if(available instanceof Boolean){
-                return {
-                    status : 200,
-                    body : available
-                }
-            }
-            else if(available instanceof Error){
-                return {
-                    status : 400,
-                    body : available.message
-                }
-            }
-        }
-        else {
-            return response.status(401).send({
-                body:"Invalid inputs!"
-            })
-        }
+        try{
+            const user : UserSignup = request.body;
+            if(!user ||
+                !user.mobile_number ||
+                !user.username ||
+                !user.password)
+                response.status(400).send({message: "Invalid Credentials"})
             
-                
+            const result = await this.authService.signup(user);
+            if(result instanceof Error) throw result;
+            response.status(200).send(result);
+        }
+        catch(error){
+            Log.error(error);
+            response.status(500).send({message: error.message})
+        }
     }
     
-    login(request : Request, response : Response) {
-        return response.status(200).send({message : "Auth/login response"})
+    async login(request : Request, response : Response) {
+        try{
+            const user : UserLogin = request.body;
+            if(!user ||
+                !user.username ||
+                !user.password)
+                response.status(400).send({message: "Invalid Credentials"})
+            
+            const result = await this.authService.login(user);
+            if(result instanceof Error) throw result;
+            response.status(200).send(result);
+        }
+        catch(error){
+            Log.error(error.message,error.stack);
+            response.status(500).send({message: error.message})
+        }
     }
 
     async getAuthBase(request : Request, response : Response){
-        DatabaseUtil.init();
         return response.status(200).send({message : "Auth base response"})
     }
 }
-
-container.register('AuthController',AuthController);
