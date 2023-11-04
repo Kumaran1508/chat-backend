@@ -23,7 +23,9 @@ Log.createInstance();
 
 config();
 
-const messageController : MessageController = new MessageController(socketServer);
+const messageController : MessageController = new MessageController();
+messageController.webSocketServer = socketServer;
+messageController.init();
 
 app.use(json());
 

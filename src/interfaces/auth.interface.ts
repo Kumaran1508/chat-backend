@@ -20,4 +20,9 @@ export interface UserLogin {
     password: string
 }
 
+export interface AuthResponse {
+    userId: string,
+    accessToken: string
+}
+
 export default interface AuthSchema extends Document,Auth {}

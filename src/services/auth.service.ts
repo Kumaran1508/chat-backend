@@ -5,7 +5,7 @@ import UserService from "./user.service";
 import AuthDao from "../dao/auth.dao";
 import { randomBytes } from 'crypto';
 import AuthModel from "../model/auth.model";
-import AuthSchema, { Auth, UserLogin, UserSignup } from "../interfaces/auth.interface";
+import AuthSchema, { Auth, AuthResponse, UserLogin, UserSignup } from "../interfaces/auth.interface";
 import mongoose from "mongoose";
 import { genSalt, hash } from "bcrypt";
 import { sign, verify } from "jsonwebtoken";
@@ -72,7 +72,7 @@ export default class AuthService{
         }
     }
 
-    public async login(user:UserLogin) : Promise<String | Error> {
+    public async login(user:UserLogin) : Promise<AuthResponse | Error> {
         if(!user || !user.username || !user.password 
             || user.username.length<4 || user.username.length>20
             || !this.passwordRegex.test(user.password))
@@ -98,7 +98,10 @@ export default class AuthService{
                 config();
                 const tokenSecret = process.env[Environment.TOKEN_SECRET];
                 const token = sign(userInfo,tokenSecret);
-                return token;
+                return {
+                    userId:userLogin.id,
+                    accessToken:token
+                };
             }
             return new Error(UIMessage.INVALID_CREDENTIALS);
         } 
@@ -117,14 +120,6 @@ export default class AuthService{
             Log.info("decoded user",user);
             if(next) next()
         })
-    }
-
-    
-    generateSalt() : string {
-        const saltBytes = randomBytes(16);
-        const salt = saltBytes.toString('hex');
-        Log.debug('Generated Salt : ',salt);
-        return salt;
     }
 
 }
