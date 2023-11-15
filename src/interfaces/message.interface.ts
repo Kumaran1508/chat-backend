@@ -1,7 +1,6 @@
 import { User } from "./user.interface";
 
 export interface Message {
-    id:string,
     source:string,
     destination:string,
     destinationType:MessageDestinationType,
@@ -12,13 +11,19 @@ export interface Message {
     sentAt: Date,
     receivedAt: Date,
     readAt: Date,
-    edited: boolean
+    edited: boolean,
+    content: string,
+    attachmentId?: string
 }
 
 export interface MessageRequest {
     sender: string,
     receiver: string,
-    message: string
+    content: string,
+    sentAt: Date,
+    hasAttachment: boolean,
+    messageType: MessageType,
+    destinationType: MessageDestinationType
 }
 
 export interface MessageSchema extends Document,Message {}

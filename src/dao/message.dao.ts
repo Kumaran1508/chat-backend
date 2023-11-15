@@ -9,11 +9,5 @@ export default class MessageDao extends BaseDao<MessageSchema>{
     constructor(model?: MessageModel){
         super(model)
     }
-
-    async findByUserId(userId:String){
-        return await this.model.findOne({
-            userId:userId
-        })
-    }
     
 }

@@ -112,14 +112,17 @@ export default class AuthService{
     }
 
 
-    public async authenticate(token:string,next?:()=>any){
+    public async authenticate(token:string){
         config();
         const tokenSecret = process.env[Environment.TOKEN_SECRET];
-        return await verify(token,tokenSecret,(err,user) => {
-            if(err) return new Error()
-            Log.info("decoded user",user);
-            if(next) next()
-        })
+        try{
+            const result = await verify(token,tokenSecret);
+            Log.info("decoded user",result);
+            return true;
+        } catch(e) {
+            Log.error(e.message,e.stack);
+            return false;
+        }
     }
 
 }
