@@ -7,7 +7,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest",
     "build": "tsc",
-    "prestart": "rm -rf dist && npm run build",
+    "prestart": "npm run format && rm -rf dist && npm run build",
     "start": "node dist/src/app.js"
   },
   "repository": {
