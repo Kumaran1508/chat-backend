@@ -3,7 +3,10 @@ import UserService from "./user.service";
 import MessageDao from "../dao/message.dao";
 import Log from "../util/logger";
 import { Server } from "socket.io";
-import { Message, MessageDestinationType, MessageRequest, MessageType } from "../interfaces/message.interface";
+import { Message, MessageDestinationType, MessageRequest, MessageSchema, MessageType, MessageUpdate } from "../interfaces/message.interface";
+import { ObjectId } from "mongodb";
+import { Schema } from "mongoose";
+
 
 @injectable()
 export default class MessageService{
@@ -19,6 +22,10 @@ export default class MessageService{
         console.log(this.userList);
     }
 
+    /**
+     * @param username 
+     * @returns socketId of the user
+     */
     getUser(username:string){
         return this.userList.get(username);
     }
@@ -30,7 +37,7 @@ export default class MessageService{
         }
     }
 
-    addMessage(message: MessageRequest) {
+    async addMessage(message: MessageRequest) {
         /**
          *  1. Check if destination is right.
          *  2. Check if the user has permissions to send message to the destination.
@@ -53,7 +60,32 @@ export default class MessageService{
             edited: false,
             content: message.content
         }
-        const result = this.messageDao.create(messageDocument);
+        const result = await this.messageDao.create(messageDocument);
+        return result
+    }
+
+    async updateMessage(message: MessageUpdate) {
+        try {
+            const result = await this.messageDao.update(message);
+            return result
+        } catch(error) {
+            Log.error("Error at MessageService.updateMessage")
+            throw error
+        }
+    }
+
+    async getMessage(messageId: string) {
+        try {
+            const id = new Schema.Types.ObjectId(messageId);
+            Log.debug("id",id);
+            const result = await this.messageDao.getById(id);
+            Log.debug("getResult",result);
+            return result
+        } catch (error) {
+            Log.error("error at MessageService.getMessage");
+            throw error
+        }
+        
     }
 
 }

@@ -17,14 +17,25 @@ export default class UserDao extends BaseDao<UserSchema>{
         return this.model.findOne(
             {
                 username:username
-            },{
-                projection:{
-                    _id:1,
-                    username:1
-                }
+            },
+            {
+                _id:1,
+                username:1,
+                mobile_number: 1
             }
         )
     }
 
+    public async updateProfile(username: string, display_name?: string,profile_url?: string,about?: string) {
+        var update = {}
+        if(display_name) update = {...update,display_name:display_name}
+        if(profile_url) update = {...update,profile_url:profile_url}
+        if(about) update = {...update,about:about}
+        return this.model.updateOne(
+        {
+            username: username
+        },
+        update)
+    }
 
 }

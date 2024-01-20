@@ -1,4 +1,4 @@
-import mongoose, { Model, ObjectId, Types } from "mongoose";
+import { Model, ObjectId } from "mongoose";
 import ModelI from "../interfaces/model.interface";
 
 export default class BaseDao<T> {
@@ -14,13 +14,11 @@ export default class BaseDao<T> {
     }
 
     public async getById(id:ObjectId){
-        return await this.model.findOne({
-            _id: id
-        }) as T  
+        return await this.model.findOne(id) as T  
     }
 
     public async delete(id:ObjectId){
-        return await this.model.deleteOne({_id: id})
+        return await this.model.deleteOne(id)
     }
 
 }

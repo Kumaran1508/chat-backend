@@ -17,8 +17,10 @@ export default class AuthController {
             if(!user ||
                 !user.mobile_number ||
                 !user.username ||
-                !user.password)
-                response.status(400).send({message: "Invalid Credentials"})
+                !user.password) {
+                    response.status(400).send({message: "Invalid Credentials"})
+                    return;
+                }
             
             const result = await this.authService.signup(user);
             if(result instanceof Error) throw result;

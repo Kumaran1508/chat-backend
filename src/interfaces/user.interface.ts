@@ -7,4 +7,12 @@ export interface User {
     profile_url?:  string
     about?: string
 }
+
+export interface UpdateProfile {
+    about?: string,
+    profile_url?: string,
+    display_name?: string
+    username: string
+}
+
 export default interface UserSchema extends Document,User {}

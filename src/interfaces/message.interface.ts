@@ -1,32 +1,39 @@
 import { User } from "./user.interface";
 
 export interface Message {
-    source:string,
-    destination:string,
-    destinationType:MessageDestinationType,
-    delivered:boolean,
-    read:boolean,
-    messageType: MessageType,
-    hasAttachment: boolean,
-    sentAt: Date,
-    receivedAt: Date,
-    readAt: Date,
-    edited: boolean,
+    source: string,
+    destination: string,
+    destinationType: MessageDestinationType,
     content: string,
-    attachmentId?: string
+    messageType: MessageType,
+    sentAt: Date,
+    delivered?: boolean,
+    read?: boolean,
+    hasAttachment?: boolean,
+    receivedAt?: Date,
+    readAt?: Date,
+    edited?: boolean,
+    attachmentId?: string,
+    isForwarded?: boolean,
+    messageStatus: MessageStatus
 }
 
 export interface MessageRequest {
     sender: string,
     receiver: string,
+    destinationType: MessageDestinationType,
     content: string,
+    messageType: MessageType,
     sentAt: Date,
     hasAttachment: boolean,
-    messageType: MessageType,
-    destinationType: MessageDestinationType
+    requestId: string
 }
 
-export interface MessageSchema extends Document,Message {}
+export interface MessageResponse extends Message {
+    messageId: string
+}
+
+export interface MessageSchema extends Document, Message { }
 
 export enum MessageDestinationType {
     DM,
@@ -50,4 +57,43 @@ export enum MessageType {
     VIDEO,
     STICKER_ANIMATED,
     SIGNED
+}
+
+export enum MessageStatus {
+    QUEUED,
+    FAILED,
+    SENT,
+    DELIVERED,
+    READ
+}
+
+export interface DeliveredRequest {
+    messageId: string,
+    source: string,
+    acknowledgedBy: string,
+    deliveredAt: Date
+}
+
+export interface ReadRequest {
+    messageId: string,
+    source: string,
+    acknowledgedBy: string,
+    readAt: Date
+}
+
+export interface AcknowledgeResponse {
+    requestId: string,
+    messageId: string
+}
+
+export interface MessageUpdate {
+    messageId: string,
+    content?: string,
+    delivered?: boolean,
+    read?: boolean,
+    receivedAt?: Date,
+    readAt?: Date,
+    edited?: boolean,
+    isForwarded?: boolean,
+    messageStatus?: MessageStatus
 }

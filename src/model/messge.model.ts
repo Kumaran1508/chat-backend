@@ -60,6 +60,15 @@ export default class MessageModel implements ModelI {
         attachmentId: {
             type: String,
             required: false
+        },
+        isForwarded: {
+            type: Boolean,
+            required: false
+        },
+        messageStatus: {
+            type: Number,
+            required: false,
+            default: 2
         }
     },{
         timestamps:true
