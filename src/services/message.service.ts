@@ -73,10 +73,22 @@ export default class MessageService {
       const id = new Schema.Types.ObjectId(messageId)
       Log.debug('id', id)
       const result = await this.messageDao.getById(id)
-      Log.debug('getResult', result)
+      Log.debug('Message', result)
       return result
     } catch (error) {
       Log.error('error at MessageService.getMessage')
+      throw error
+    }
+  }
+
+  async getNotDeliveredMessagesByUsername(username: string) {
+    try {
+      const result =
+        await this.messageDao.getNotDeliveredMessagesByUsername(username)
+      Log.debug('undelivered messages', { size: result.length })
+      return result
+    } catch (error) {
+      Log.error('error at MessageService.getNotDeliveredMessagesByUsername')
       throw error
     }
   }

@@ -1,22 +1,19 @@
-import { autoInjectable, container, inject, injectable } from 'tsyringe'
-import Log from '../util/logger'
+import { genSalt, hash } from 'bcrypt'
+import { config } from 'dotenv'
+import { sign, verify } from 'jsonwebtoken'
+import mongoose from 'mongoose'
+import { inject, injectable } from 'tsyringe'
+import { Environment } from '../constants/environment.constants'
 import { UIMessage } from '../constants/ui.message.constants'
-import UserService from './user.service'
 import AuthDao from '../dao/auth.dao'
-import { randomBytes } from 'crypto'
-import AuthModel from '../model/auth.model'
 import AuthSchema, {
-  Auth,
   AuthResponse,
   UserLogin,
   UserSignup
 } from '../interfaces/auth.interface'
-import mongoose from 'mongoose'
-import { genSalt, hash } from 'bcrypt'
-import { sign, verify } from 'jsonwebtoken'
-import { Environment } from '../constants/environment.constants'
-import { config } from 'dotenv'
-import { User } from '../interfaces/user.interface'
+import { UserResponse } from '../interfaces/user.interface'
+import Log from '../util/logger'
+import UserService from './user.service'
 
 @injectable()
 export default class AuthService {
@@ -104,12 +101,13 @@ export default class AuthService {
 
       const hashedPassword = await hash(user.password, userAuth.salt)
       if (hashedPassword == userAuth.password) {
-        const userInfo: User = {
+        const userInfo: UserResponse = {
           username: userLogin.username,
           mobile_number: userLogin.mobile_number,
           profile_url: userLogin.profile_url,
           display_name: userLogin.display_name,
-          about: userLogin.about
+          about: userLogin.about,
+          id: userLogin.id
         }
 
         config()

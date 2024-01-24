@@ -62,7 +62,29 @@ export default class MessageController {
       this.addOnDeliveredListener(socket)
       this.addOnReadListener(socket)
       this.addOnCloseListener(socket)
+      this.sendQueuedMessages(socket, username)
     })
+  }
+
+  private async sendQueuedMessages(socket: Socket, username: string) {
+    try {
+      const undeliveredMessages =
+        await this.messageService.getNotDeliveredMessagesByUsername(username)
+      undeliveredMessages.forEach((message) => {
+        socket.emit('chat', {
+          messageId: message.id,
+          source: message.source,
+          destination: message.destination,
+          destinationType: message.destinationType,
+          content: message.content,
+          messageType: message.messageType,
+          sentAt: message.sentAt,
+          messageStatus: message.messageStatus
+        })
+      })
+    } catch (e) {
+      Log.error('sendQueuedMessages', e.message)
+    }
   }
 
   private addChatListener(socket: Socket) {

@@ -1,4 +1,4 @@
-import { User } from './user.interface'
+import { Document } from 'mongoose'
 
 export interface Message {
   source: string
