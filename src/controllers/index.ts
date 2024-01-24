@@ -1,4 +1,4 @@
-import AuthController from "./auth.controller";
-import MessageController from "./message.controller";
+import AuthController from './auth.controller'
+import MessageController from './message.controller'
 
-export {AuthController,MessageController};
+export { AuthController, MessageController }
