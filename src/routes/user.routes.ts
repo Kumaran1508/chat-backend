@@ -14,6 +14,8 @@ userRouter.post(
   userController.updateProfile.bind(userController)
 )
 
+userRouter.get('/', userController.getUser.bind(userController))
+
 // userRouter.get("/something",controller.method.bind(controller))
 
 export default userRouter

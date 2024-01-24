@@ -16,3 +16,7 @@ export interface UpdateProfile {
 }
 
 export default interface UserSchema extends Document, User {}
+
+export interface UserResponse extends User {
+  id: string
+}

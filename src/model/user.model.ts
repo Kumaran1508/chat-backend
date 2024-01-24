@@ -1,8 +1,7 @@
 import { Model, Schema, model } from 'mongoose'
-import User from '../interfaces/user.interface'
-import UserSchema from '../interfaces/user.interface'
-import ModelI from '../interfaces/model.interface'
 import { singleton } from 'tsyringe'
+import ModelI from '../interfaces/model.interface'
+import UserSchema from '../interfaces/user.interface'
 
 @singleton()
 export default class UserModel implements ModelI {
@@ -21,7 +20,7 @@ export default class UserModel implements ModelI {
         type: String,
         required: true
       },
-      profile_picture: {
+      profile_url: {
         type: String,
         required: false
       },

@@ -1,10 +1,11 @@
-import { MongoClient } from 'mongodb'
-import Log from '../util/logger'
-import User from '../interfaces/user.interface'
-import { autoInjectable, container, inject, injectable } from 'tsyringe'
-import BaseDao from './base.dao'
-import UserSchema from '../interfaces/user.interface'
+import { ObjectId } from 'mongoose'
+import { injectable } from 'tsyringe'
+import {
+  default as User,
+  default as UserSchema
+} from '../interfaces/user.interface'
 import UserModel from '../model/user.model'
+import BaseDao from './base.dao'
 
 @injectable()
 export default class UserDao extends BaseDao<UserSchema> {
@@ -13,16 +14,13 @@ export default class UserDao extends BaseDao<UserSchema> {
   }
 
   public async findUserByUsername(username: String): Promise<User> {
-    return this.model.findOne(
-      {
-        username: username
-      },
-      {
-        _id: 1,
-        username: 1,
-        mobile_number: 1
-      }
-    )
+    return this.model.findOne({
+      username: username
+    })
+  }
+
+  public async findById(id: ObjectId): Promise<User> {
+    return this.model.findById(id)
   }
 
   public async updateProfile(

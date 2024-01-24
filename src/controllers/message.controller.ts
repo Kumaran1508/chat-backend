@@ -1,23 +1,20 @@
-import { WebSocketServer } from 'ws'
-import Log from '../util/logger'
+import { JwtPayload, decode } from 'jsonwebtoken'
+import { UpdateResult } from 'mongodb'
 import { Server, Socket } from 'socket.io'
-import { autoInjectable, inject, injectable } from 'tsyringe'
-import MessageService from '../services/message.service'
-import { AuthService } from '../services'
+import { autoInjectable, inject } from 'tsyringe'
+import { SocketEvent } from '../constants/socket.event.constants'
+import { UIMessage } from '../constants/ui.message.constants'
 import {
   AcknowledgeResponse,
   DeliveredRequest,
-  ReadRequest,
-  Message,
   MessageRequest,
-  MessageSchema,
   MessageResponse,
-  MessageStatus
+  MessageStatus,
+  ReadRequest
 } from '../interfaces/message.interface'
-import { JwtPayload, decode } from 'jsonwebtoken'
-import { UIMessage } from '../constants/ui.message.constants'
-import { SocketEvent } from '../constants/socket.event.constants'
-import { UpdateResult } from 'mongodb'
+import { AuthService } from '../services'
+import MessageService from '../services/message.service'
+import Log from '../util/logger'
 @autoInjectable()
 export default class MessageController {
   public webSocketServer: Server
@@ -188,7 +185,9 @@ export default class MessageController {
             readAt: readRequest.readAt
           })
           if (result.modifiedCount == 1) {
-            this.webSocketServer.to(sender).emit(SocketEvent.READ, readRequest)
+            this.webSocketServer
+              .to([sender, requester])
+              .emit(SocketEvent.READ, readRequest)
           }
         } else {
           // Handle Error

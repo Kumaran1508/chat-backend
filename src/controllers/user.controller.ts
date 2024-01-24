@@ -1,10 +1,10 @@
-import { Router, Request, Response } from 'express'
-import { autoInjectable, container, inject, injectable } from 'tsyringe'
-import { AuthService } from '../services'
-import Log from '../util/logger'
-import UserService from '../services/user.service'
-import { UpdateProfile } from '../interfaces/user.interface'
+import { Request, Response } from 'express'
 import { UpdateResult } from 'mongodb'
+import { autoInjectable } from 'tsyringe'
+import { UIMessage } from '../constants/ui.message.constants'
+import { UpdateProfile, UserResponse } from '../interfaces/user.interface'
+import UserService from '../services/user.service'
+import Log from '../util/logger'
 
 @autoInjectable()
 export default class UserController {
@@ -13,14 +13,14 @@ export default class UserController {
   async checkUsername(request: Request, response: Response) {
     const username = request.query.username as string
     Log.info(`/check-username : ${username}`)
-    const available = await this.userService.findUserByUsername(username)
     if (username) {
+      const available = await this.userService.findUserByUsername(username)
       if (available instanceof Error) {
         return response.status(500).send(available)
       } else return response.status(200).send(!available)
     } else {
-      return response.status(401).send({
-        body: 'Invalid inputs!'
+      return response.status(400).send({
+        body: 'Invalid Username!'
       })
     }
   }
@@ -42,6 +42,36 @@ export default class UserController {
     } catch (error) {
       Log.error('UpdateProfileError', error.message)
       response.status(500).send({ message: error.message })
+    }
+  }
+
+  async getUser(request: Request, response: Response) {
+    try {
+      const id = request.query.id
+      const username = request.query.username
+      Log.info(`find User : ${username}`)
+      if (username || id) {
+        const user = id
+          ? await this.userService.findUserById(id as string)
+          : await this.userService.findUserByUsername(username as string)
+        if (user instanceof Error) response.status(500).send(user)
+        else {
+          const userResponse: UserResponse = {
+            id: user.id,
+            mobile_number: user.mobile_number,
+            username: user.username,
+            display_name: user.display_name,
+            about: user.about,
+            profile_url: user.profile_url
+          }
+          response.status(200).send(userResponse)
+        }
+      } else {
+        response.status(400).send(UIMessage.INVALID_USERNAME_OR_ID)
+      }
+    } catch (error) {
+      Log.error('errorFindingUser', error)
+      response.status(500).send('Internal error occured')
     }
   }
 }

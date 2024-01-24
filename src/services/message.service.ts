@@ -1,18 +1,8 @@
-import { inject, injectable } from 'tsyringe'
-import UserService from './user.service'
-import MessageDao from '../dao/message.dao'
-import Log from '../util/logger'
-import { Server } from 'socket.io'
-import {
-  Message,
-  MessageDestinationType,
-  MessageRequest,
-  MessageSchema,
-  MessageType,
-  MessageUpdate
-} from '../interfaces/message.interface'
-import { ObjectId } from 'mongodb'
 import { Schema } from 'mongoose'
+import { inject, injectable } from 'tsyringe'
+import MessageDao from '../dao/message.dao'
+import { MessageRequest, MessageUpdate } from '../interfaces/message.interface'
+import Log from '../util/logger'
 
 @injectable()
 export default class MessageService {

@@ -1,9 +1,9 @@
-import { autoInjectable, container, inject, injectable } from 'tsyringe'
-import UserDao from '../dao/user.dao'
-import Log from '../util/logger'
-import { UIMessage } from '../constants/ui.message.constants'
-import UserSchema, { UpdateProfile } from '../interfaces/user.interface'
 import { Schema } from 'mongoose'
+import { inject, injectable } from 'tsyringe'
+import { UIMessage } from '../constants/ui.message.constants'
+import UserDao from '../dao/user.dao'
+import UserSchema, { UpdateProfile } from '../interfaces/user.interface'
+import Log from '../util/logger'
 
 @injectable()
 export default class UserService {
@@ -39,13 +39,23 @@ export default class UserService {
     try {
       if (username.length < 4 || username.length > 24)
         return new Error(UIMessage.INVALID_USERNAME)
-
       const user = await this.userDao.findUserByUsername(username)
-
       return user
     } catch (error) {
       Log.error('Error at UserService:findUserByUsername :: ' + error.stack)
       return error
+    }
+  }
+
+  public async findUserById(userId: string) {
+    Log.info('Searching UserService:findUserByUsername')
+    try {
+      const id = new Schema.Types.ObjectId(userId)
+      const user = await this.userDao.findById(id)
+      return user
+    } catch (error) {
+      Log.error('Error at UserService:findUserByUsername :: ' + error.stack)
+      return new Error('user not found')
     }
   }
 
