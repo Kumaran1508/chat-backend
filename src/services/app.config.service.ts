@@ -4,18 +4,18 @@ import Log from '../util/logger'
 
 @autoInjectable()
 export default class AppConfigService {
-    constructor(
-        @inject(AppConfigDao)
-        private appConfigDao: AppConfigDao
-    ) { }
+  constructor(
+    @inject(AppConfigDao)
+    private appConfigDao: AppConfigDao
+  ) {}
 
-    public async getAppConfig(key: string) {
-        Log.info('Getting AppConfigService:getAppConfig', { key })
-        try {
-            return await this.appConfigDao.findByKey(key)
-        } catch (error) {
-            Log.error(error.message, error.stack)
-            throw error
-        }
+  public async getAppConfig(key: string) {
+    Log.info('Getting AppConfigService:getAppConfig', { key })
+    try {
+      return await this.appConfigDao.findByKey(key)
+    } catch (error) {
+      Log.error(error.message, error.stack)
+      throw error
     }
+  }
 }
