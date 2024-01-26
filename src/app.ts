@@ -5,6 +5,7 @@ import { createServer } from 'http'
 import 'reflect-metadata'
 import { Server } from 'socket.io'
 import { MessageController } from './controllers'
+import appConfigRouter from './routes/app.config.routes'
 import authRouter from './routes/auth.routes'
 import userRouter from './routes/user.routes'
 import { InitDatabase } from './util/database'
@@ -35,6 +36,7 @@ app.get('/', async (req: Request, res: Response) => {
 
 app.use('/auth', authRouter)
 app.use('/user', userRouter)
+app.use('/config', appConfigRouter)
 
 try {
   InitDatabase()
