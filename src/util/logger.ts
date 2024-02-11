@@ -1,14 +1,16 @@
 import { config } from 'dotenv'
-import { createLogger, format, transports, Logger, level, info } from 'winston'
+import { Logger, createLogger, format, transports } from 'winston'
+import { StreamTransportInstance } from 'winston/lib/winston/transports'
 import { Environment } from '../constants/environment.constants'
-import {
-  StreamTransportInstance,
-  Transports
-} from 'winston/lib/winston/transports'
 
 export default class Log {
   private static logger: Logger
   transportList: StreamTransportInstance[] = []
+
+  // Custom format for local timestamp
+  private localTimestampFormat = () => {
+    return new Date().toLocaleString()
+  }
 
   private constructor() {
     config()
@@ -42,7 +44,7 @@ export default class Log {
     Log.logger = createLogger({
       level: 'info',
       format: format.combine(
-        format.timestamp(),
+        format.timestamp({ format: this.localTimestampFormat }),
         format.colorize(),
         format.simple()
       ),

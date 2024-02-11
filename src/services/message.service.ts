@@ -41,8 +41,8 @@ export default class MessageService {
      */
 
     const messageDocument: any = {
-      source: message.sender,
-      destination: message.receiver,
+      source: message.source,
+      destination: message.destination,
       destinationType: message.destinationType,
       delivered: false,
       read: false,

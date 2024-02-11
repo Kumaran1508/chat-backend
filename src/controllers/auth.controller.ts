@@ -1,8 +1,8 @@
-import { Router, Request, Response } from 'express'
-import { autoInjectable, container, inject, injectable } from 'tsyringe'
+import { Request, Response } from 'express'
+import { autoInjectable } from 'tsyringe'
+import { UserLogin, UserSignup } from '../interfaces/auth.interface'
 import { AuthService } from '../services'
 import Log from '../util/logger'
-import { UserLogin, UserSignup } from '../interfaces/auth.interface'
 
 @autoInjectable()
 export default class AuthController {
@@ -11,7 +11,7 @@ export default class AuthController {
   async signup(request: Request, response: Response) {
     try {
       const user: UserSignup = request.body
-      if (!user || !user.mobile_number || !user.username || !user.password) {
+      if (!user || !user.mobileNumber || !user.username || !user.password) {
         response.status(400).send({ message: 'Invalid Credentials' })
         return
       }

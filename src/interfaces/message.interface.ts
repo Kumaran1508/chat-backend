@@ -19,8 +19,8 @@ export interface Message {
 }
 
 export interface MessageRequest {
-  sender: string
-  receiver: string
+  source: string
+  destination: string
   destinationType: MessageDestinationType
   content: string
   messageType: MessageType

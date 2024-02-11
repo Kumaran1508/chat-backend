@@ -7,12 +7,12 @@ import UserSchema from '../interfaces/user.interface'
 export default class UserModel implements ModelI {
   schema: Schema<any> = new Schema(
     {
-      display_name: {
+      displayName: {
         type: String,
         required: false,
         default: 'Unknown'
       },
-      mobile_number: {
+      mobileNumber: {
         type: String,
         required: true
       },
@@ -20,7 +20,7 @@ export default class UserModel implements ModelI {
         type: String,
         required: true
       },
-      profile_url: {
+      profileUrl: {
         type: String,
         required: false
       },

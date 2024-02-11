@@ -9,7 +9,7 @@ userRouter.get(
   userController.checkUsername.bind(userController)
 )
 
-userRouter.post(
+userRouter.put(
   '/update-profile',
   userController.updateProfile.bind(userController)
 )

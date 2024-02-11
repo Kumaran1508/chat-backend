@@ -1,17 +1,17 @@
 import { Document } from 'mongoose'
 
 export interface User {
-  mobile_number: string
+  mobileNumber: string
   username: string
-  display_name?: string
-  profile_url?: string
+  displayName?: string
+  profileUrl?: string
   about?: string
 }
 
 export interface UpdateProfile {
   about?: string
-  profile_url?: string
-  display_name?: string
+  profileUrl?: string
+  displayName?: string
   username: string
 }
 

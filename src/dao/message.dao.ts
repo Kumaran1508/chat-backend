@@ -1,6 +1,10 @@
 import { ObjectId } from 'mongodb'
 import { injectable } from 'tsyringe'
-import { MessageSchema, MessageUpdate } from '../interfaces/message.interface'
+import {
+  MessageSchema,
+  MessageStatus,
+  MessageUpdate
+} from '../interfaces/message.interface'
 import MessageModel from '../model/messge.model'
 import BaseDao from './base.dao'
 
@@ -15,7 +19,7 @@ export default class MessageDao extends BaseDao<MessageSchema> {
 
     return this.model.updateOne(
       {
-        _id: new ObjectId(message.messageId)
+        _id: new ObjectId(messageId)
       },
       update
     )
@@ -26,7 +30,7 @@ export default class MessageDao extends BaseDao<MessageSchema> {
   ): Promise<MessageSchema[]> {
     return this.model.find({
       destination: username,
-      delivered: false
+      messageStatus: MessageStatus.SENT
     })
   }
 }

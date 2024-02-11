@@ -34,7 +34,7 @@ export default class AuthService {
 
     const session = await mongoose.startSession()
     try {
-      if (!mobileRegex.test(user.mobile_number))
+      if (!mobileRegex.test(user.mobileNumber))
         return new Error(UIMessage.INVALID_MOBILE_NUMBER)
       if (!this.passwordRegex.test(user.password))
         return new Error(UIMessage.INVALID_PASSWORD)
@@ -103,9 +103,9 @@ export default class AuthService {
       if (hashedPassword == userAuth.password) {
         const userInfo: UserResponse = {
           username: userLogin.username,
-          mobile_number: userLogin.mobile_number,
-          profile_url: userLogin.profile_url,
-          display_name: userLogin.display_name,
+          mobileNumber: userLogin.mobileNumber,
+          profileUrl: userLogin.profileUrl,
+          displayName: userLogin.displayName,
           about: userLogin.about,
           id: userLogin.id
         }

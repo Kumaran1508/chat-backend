@@ -8,11 +8,11 @@ export interface Auth {
 }
 
 export interface UserSignup {
-  mobile_number: string
+  mobileNumber: string
   username: string
   password: string
-  display_name?: string
-  profile_url?: string
+  displayName?: string
+  profileUrl?: string
 }
 
 export interface UserLogin {

@@ -64,13 +64,13 @@ export default class UserService {
     try {
       if (profile.username.length < 4 || profile.username.length > 24)
         return new Error(UIMessage.INVALID_USERNAME)
-      if (profile.display_name && profile.display_name.length > 24)
+      if (profile.displayName && profile.displayName.length > 24)
         return new Error(UIMessage.INVALID_DISPLAY_NAME)
 
       const updated = await this.userDao.updateProfile(
         profile.username,
-        profile.display_name,
-        profile.profile_url,
+        profile.displayName,
+        profile.profileUrl,
         profile.about
       )
       Log.info('update complete: ', updated)

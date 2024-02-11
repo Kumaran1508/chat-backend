@@ -30,7 +30,7 @@ export default class UserController {
       const profile: UpdateProfile = request.body
       if (
         !profile ||
-        (profile.display_name && profile.display_name.length > 20)
+        (profile.displayName && profile.displayName.length > 20)
       ) {
         response.status(400).send({ message: 'Invalid Profile' })
         return
@@ -58,11 +58,11 @@ export default class UserController {
         else {
           const userResponse: UserResponse = {
             id: user.id,
-            mobile_number: user.mobile_number,
+            mobileNumber: user.mobileNumber,
             username: user.username,
-            display_name: user.display_name,
+            displayName: user.displayName,
             about: user.about,
-            profile_url: user.profile_url
+            profileUrl: user.profileUrl
           }
           response.status(200).send(userResponse)
         }

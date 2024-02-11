@@ -14,6 +14,7 @@ import {
 } from '../interfaces/message.interface'
 import { AuthService } from '../services'
 import MessageService from '../services/message.service'
+import UserService from '../services/user.service'
 import Log from '../util/logger'
 @autoInjectable()
 export default class MessageController {
@@ -23,7 +24,9 @@ export default class MessageController {
     @inject(MessageService)
     private messageService?: MessageService,
     @inject(AuthService)
-    private authService?: AuthService
+    private authService?: AuthService,
+    @inject(UserService)
+    private userService?: UserService
   ) {}
 
   public init() {
@@ -56,12 +59,28 @@ export default class MessageController {
       Log.debug('decoded user', { username })
       this.messageService.addUser(username, socket.id)
 
+      // Listen for the reconnection event
+      socket.on('reconnect', (attemptNumber) => {
+        console.log(
+          `Reconnected after ${attemptNumber} attempts with ID: ${socket.id}`
+        )
+
+        // Update the stored socket.id or perform any other actions needed
+        this.messageService.addUser(username, socket.id)
+      })
+
       socket.send('id : ' + socket.id)
 
       this.addChatListener(socket)
       this.addOnDeliveredListener(socket)
       this.addOnReadListener(socket)
       this.addOnCloseListener(socket)
+      this.addOnQueueListener(socket, username)
+    })
+  }
+
+  private async addOnQueueListener(socket: Socket, username: string) {
+    socket.on('queue', async (data) => {
       this.sendQueuedMessages(socket, username)
     })
   }
@@ -70,18 +89,19 @@ export default class MessageController {
     try {
       const undeliveredMessages =
         await this.messageService.getNotDeliveredMessagesByUsername(username)
-      undeliveredMessages.forEach((message) => {
-        socket.emit('chat', {
-          messageId: message.id,
-          source: message.source,
-          destination: message.destination,
-          destinationType: message.destinationType,
-          content: message.content,
-          messageType: message.messageType,
-          sentAt: message.sentAt,
-          messageStatus: message.messageStatus
-        })
-      })
+      const chunk = undeliveredMessages.slice(0, 50)
+      const preparedChunk = chunk.map((message) => ({
+        messageId: message.id,
+        source: message.source,
+        destination: message.destination,
+        destinationType: message.destinationType,
+        content: message.content,
+        messageType: message.messageType,
+        sentAt: message.sentAt,
+        messageStatus: message.messageStatus
+      }))
+      socket.emit('queue', preparedChunk)
+      Log.debug('chunk', preparedChunk.length)
     } catch (e) {
       Log.error('sendQueuedMessages', e.message)
     }
@@ -92,8 +112,10 @@ export default class MessageController {
       Log.info('message received')
       const messageRequest: MessageRequest = JSON.parse(data)
       Log.info('message: ', { messageRequest })
-      const sender = this.messageService.getUser(messageRequest.sender)
-      const receiver = this.messageService.getUser(messageRequest.receiver)
+      const sender = this.messageService.getUser(messageRequest.source)
+      const receiver = this.userService.findUserByUsername(
+        messageRequest.destination
+      )
 
       // Log.debug("authorization: ",socket.request.headers.authorization)
       if (sender != socket.id) {
@@ -108,21 +130,29 @@ export default class MessageController {
           const message = await this.messageService.addMessage(messageRequest)
           var messageResponse: MessageResponse = {
             messageId: message.id,
-            source: messageRequest.sender,
-            destination: messageRequest.receiver,
+            source: messageRequest.source,
+            destination: messageRequest.destination,
             destinationType: messageRequest.destinationType,
             content: messageRequest.content,
             messageType: messageRequest.messageType,
             sentAt: messageRequest.sentAt,
             messageStatus: MessageStatus.SENT
           }
-          this.webSocketServer.to(receiver).emit('chat', messageResponse)
 
           const messageAckowledge: AcknowledgeResponse = {
             messageId: message.id,
             requestId: messageRequest.requestId
           }
           socket.emit(SocketEvent.ACKNOWLEDGE, messageAckowledge)
+          Log.debug('acknowledging to', { socket: socket.id })
+
+          const destination = this.messageService.getUser(
+            messageRequest.destination
+          )
+          Log.debug('destination', destination)
+          if (destination)
+            this.webSocketServer.to(destination).emit('chat', messageResponse)
+          else Log.warn('SocketError', 'User not connected')
         } catch (e) {
           socket.send('Error sending message', e.message)
         }
@@ -135,8 +165,9 @@ export default class MessageController {
   private addOnDeliveredListener(socket: Socket) {
     socket.on(SocketEvent.DELIVERED, async (data) => {
       try {
-        Log.info('message received')
+        Log.info('delivery request received', data)
         const deliveredRequest: DeliveredRequest = JSON.parse(data)
+
         const requester = this.messageService.getUser(
           deliveredRequest.acknowledgedBy
         )
@@ -147,7 +178,9 @@ export default class MessageController {
           return
         }
 
-        const sender = this.messageService.getUser(deliveredRequest.source)
+        const sender = this.userService.findUserByUsername(
+          deliveredRequest.source
+        )
         const message = this.messageService.getMessage(
           deliveredRequest.messageId
         )
@@ -156,36 +189,50 @@ export default class MessageController {
           const result: UpdateResult = await this.messageService.updateMessage({
             messageId: deliveredRequest.messageId,
             delivered: true,
-            receivedAt: deliveredRequest.deliveredAt
+            receivedAt: deliveredRequest.deliveredAt,
+            messageStatus: MessageStatus.DELIVERED
           })
           Log.debug('updateResult', result)
+          const senderSocketId = this.messageService.getUser(
+            deliveredRequest.source
+          )
           if (result.modifiedCount == 1) {
             this.webSocketServer
-              .to(sender)
+              .to(senderSocketId)
               .emit(SocketEvent.DELIVERED, deliveredRequest)
             Log.debug('delivery update', { sender, deliveredRequest })
           }
         } else {
           // Handle Error
-          Log.error('MessageDeliveryError', 'Unkown')
+          if (!sender)
+            Log.error('MessageDeliveryError', {
+              message: 'Source not found',
+              source: deliveredRequest.source
+            })
+          else if (!message)
+            Log.error('MessageDeliveryError', {
+              message: 'Message not found',
+              source: deliveredRequest.messageId
+            })
+          else Log.error('MessageDeliveryError', { message: 'Unknown Error' })
         }
       } catch (e) {
-        Log.error('MessageDeliveryError', { message: e.message })
+        Log.error('MessageDeliveryError4', { message: e.message })
       }
     })
   }
 
   private addOnCloseListener(socket: Socket) {
-    socket.on('close', () => {
+    socket.on('disconnect', () => {
       Log.info('connection closed', socket.id)
       this.messageService.deleteUser(socket.id)
     })
   }
 
-  addOnReadListener(socket: Socket) {
+  private addOnReadListener(socket: Socket) {
     socket.on(SocketEvent.READ, async (data) => {
       try {
-        Log.info('message received')
+        Log.info('read request received')
         const readRequest: ReadRequest = JSON.parse(data)
         const requester = this.messageService.getUser(
           readRequest.acknowledgedBy
@@ -197,26 +244,39 @@ export default class MessageController {
           return
         }
 
-        const sender = this.messageService.getUser(readRequest.source)
+        const sender = this.userService.findUserByUsername(readRequest.source)
         const message = this.messageService.getMessage(readRequest.messageId)
         // Todo: Error handling - if(!sender) error if(!message) error
         if (sender && message) {
           const result: UpdateResult = await this.messageService.updateMessage({
             messageId: readRequest.messageId,
             read: true,
-            readAt: readRequest.readAt
+            readAt: readRequest.readAt,
+            messageStatus: MessageStatus.READ,
+            delivered: true
           })
+          const senderSocketId = this.messageService.getUser(readRequest.source)
           if (result.modifiedCount == 1) {
             this.webSocketServer
-              .to([sender, requester])
+              .to([senderSocketId, requester])
               .emit(SocketEvent.READ, readRequest)
           }
         } else {
           // Handle Error
-          Log.error('MessageDeliveryError', 'Unkown')
+          if (!sender)
+            Log.error('MessageReadError', {
+              message: 'Source not found',
+              source: readRequest.source
+            })
+          else if (!message)
+            Log.error('MessageReadError', {
+              message: 'Message not found',
+              source: readRequest.messageId
+            })
+          else Log.error('MessageReadError', { message: 'Unknown Error' })
         }
       } catch (e) {
-        Log.error('MessageDeliveryError', { message: e.message })
+        Log.error('MessageReadError', { message: e.message })
       }
     })
   }
