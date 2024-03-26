@@ -12,6 +12,7 @@ import {
   MessageStatus,
   ReadRequest
 } from '../interfaces/message.interface'
+import UserSchema from '../interfaces/user.interface'
 import { AuthService } from '../services'
 import MessageService from '../services/message.service'
 import UserService from '../services/user.service'
@@ -58,6 +59,11 @@ export default class MessageController {
       ]
       Log.debug('decoded user', { username })
       this.messageService.addUser(username, socket.id)
+      this.userService.setOnline(username)
+      this.webSocketServer.emit(username, {
+        username: username,
+        isOnline: true
+      })
 
       // Listen for the reconnection event
       socket.on('reconnect', (attemptNumber) => {
@@ -74,22 +80,27 @@ export default class MessageController {
       this.addChatListener(socket)
       this.addOnDeliveredListener(socket)
       this.addOnReadListener(socket)
-      this.addOnCloseListener(socket)
+      this.addOnCloseListener(socket, username)
       this.addOnQueueListener(socket, username)
     })
   }
 
   private async addOnQueueListener(socket: Socket, username: string) {
     socket.on('queue', async (data) => {
-      this.sendQueuedMessages(socket, username)
+      this.sendQueuedUpdates(socket, username)
     })
   }
 
-  private async sendQueuedMessages(socket: Socket, username: string) {
+  private async sendQueuedUpdates(socket: Socket, username: string) {
     try {
-      const undeliveredMessages =
-        await this.messageService.getNotDeliveredMessagesByUsername(username)
-      const chunk = undeliveredMessages.slice(0, 50)
+      const lastOnline = (
+        (await this.userService.findUserByUsername(username)) as UserSchema
+      ).lastOnline
+      const updatedMessages = await this.messageService.getUpdatedMessages(
+        username,
+        lastOnline
+      )
+      const chunk = updatedMessages.slice(0, 50)
       const preparedChunk = chunk.map((message) => ({
         messageId: message.id,
         source: message.source,
@@ -222,10 +233,20 @@ export default class MessageController {
     })
   }
 
-  private addOnCloseListener(socket: Socket) {
+  private addOnCloseListener(socket: Socket, username: string) {
     socket.on('disconnect', () => {
       Log.info('connection closed', socket.id)
       this.messageService.deleteUser(socket.id)
+      this.webSocketServer.emit(username, {
+        username: username,
+        isOnline: false,
+        lastOnline: new Date()
+      })
+      try {
+        this.userService.updateLastOnline(username)
+      } catch (e) {
+        Log.error('UpdateLastOnlineError', { message: e.message })
+      }
     })
   }
 

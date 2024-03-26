@@ -6,6 +6,8 @@ export interface User {
   displayName?: string
   profileUrl?: string
   about?: string
+  lastOnline?: Date
+  isOnline?: boolean
 }
 
 export interface UpdateProfile {

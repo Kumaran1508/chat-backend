@@ -62,7 +62,9 @@ export default class UserController {
             username: user.username,
             displayName: user.displayName,
             about: user.about,
-            profileUrl: user.profileUrl
+            profileUrl: user.profileUrl,
+            isOnline: user.isOnline,
+            lastOnline: user.lastOnline
           }
           response.status(200).send(userResponse)
         }

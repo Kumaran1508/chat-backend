@@ -11,7 +11,7 @@ export default class MessageService {
   constructor(
     @inject(MessageDao)
     private messageDao: MessageDao
-  ) {}
+  ) { }
 
   addUser(username: string, socketId: string) {
     this.userList.set(username, socketId)
@@ -27,8 +27,8 @@ export default class MessageService {
   }
 
   deleteUser(username: string) {
-    for (let [key, value] of this.userList.entries()) {
-      if (value === username) this.userList.delete(key)
+    if (this.userList.get(username) != null) {
+      this.userList.delete(username)
     }
   }
 
@@ -81,10 +81,12 @@ export default class MessageService {
     }
   }
 
-  async getNotDeliveredMessagesByUsername(username: string) {
+  async getUpdatedMessages(username: string, lastOnline: Date) {
     try {
-      const result =
-        await this.messageDao.getNotDeliveredMessagesByUsername(username)
+      const result = await this.messageDao.getUpdatedMessages(
+        username,
+        lastOnline
+      )
       Log.debug('undelivered messages', { size: result.length })
       return result
     } catch (error) {

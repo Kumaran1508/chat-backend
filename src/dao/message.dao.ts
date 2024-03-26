@@ -1,10 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { injectable } from 'tsyringe'
-import {
-  MessageSchema,
-  MessageStatus,
-  MessageUpdate
-} from '../interfaces/message.interface'
+import { MessageSchema, MessageUpdate } from '../interfaces/message.interface'
 import MessageModel from '../model/messge.model'
 import BaseDao from './base.dao'
 
@@ -25,12 +21,13 @@ export default class MessageDao extends BaseDao<MessageSchema> {
     )
   }
 
-  public async getNotDeliveredMessagesByUsername(
-    username: string
+  public async getUpdatedMessages(
+    username: string,
+    lastOnline: Date
   ): Promise<MessageSchema[]> {
     return this.model.find({
-      destination: username,
-      messageStatus: MessageStatus.SENT
+      $or: [{ source: username }, { destination: username }],
+      updatedAt: { $gte: lastOnline }
     })
   }
 }

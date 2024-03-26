@@ -80,4 +80,24 @@ export default class UserService {
       return error
     }
   }
+
+  public async updateLastOnline(username: string) {
+    Log.info('Updating UserService:updateLastOnline', { user: username })
+    try {
+      return this, this.userDao.updateLastOnline(username)
+    } catch (error) {
+      Log.error('Error at UserService:updateLastOnline :: ' + error.stack)
+      return new Error('user not found')
+    }
+  }
+
+  public async setOnline(username: string) {
+    Log.info('Updating UserService:OnlineStatus', { user: username })
+    try {
+      return this, this.userDao.setOnline(username)
+    } catch (error) {
+      Log.error('Error at UserService:setOnline :: ' + error.stack)
+      return new Error('user not found')
+    }
+  }
 }

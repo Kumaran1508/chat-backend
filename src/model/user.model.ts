@@ -27,6 +27,16 @@ export default class UserModel implements ModelI {
       about: {
         type: String,
         reuired: false
+      },
+      lastOnline: {
+        type: Date,
+        required: false,
+        default: new Date()
+      },
+      isOnline: {
+        type: Boolean,
+        required: true,
+        default: false
       }
     },
     {

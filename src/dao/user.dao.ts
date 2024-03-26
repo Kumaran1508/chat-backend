@@ -25,19 +25,42 @@ export default class UserDao extends BaseDao<UserSchema> {
 
   public async updateProfile(
     username: string,
-    display_name?: string,
-    profile_url?: string,
+    displayName?: string,
+    profileUrl?: string,
     about?: string
   ) {
     var update = {}
-    if (display_name) update = { ...update, display_name: display_name }
-    if (profile_url) update = { ...update, profile_url: profile_url }
+    if (displayName) update = { ...update, displayName: displayName }
+    if (profileUrl) update = { ...update, profileUrl: profileUrl }
     if (about) update = { ...update, about: about }
     return this.model.updateOne(
       {
         username: username
       },
       update
+    )
+  }
+
+  public async updateLastOnline(username: string) {
+    return this.model.updateOne(
+      {
+        username: username
+      },
+      {
+        lastOnline: new Date(),
+        isOnline: false
+      }
+    )
+  }
+
+  public async setOnline(username: string) {
+    return this.model.updateOne(
+      {
+        username: username
+      },
+      {
+        isOnline: true
+      }
     )
   }
 }
