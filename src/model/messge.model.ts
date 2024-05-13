@@ -1,11 +1,9 @@
 import { Model, Schema, model } from 'mongoose'
 import { singleton } from 'tsyringe'
-import ModelI from '../interfaces/model.interface'
 import {
-  MessageDestinationType,
-  MessageSchema,
-  MessageType
+  MessageSchema
 } from '../interfaces/message.interface'
+import ModelI from '../interfaces/model.interface'
 
 @singleton()
 export default class MessageModel implements ModelI {
@@ -74,6 +72,15 @@ export default class MessageModel implements ModelI {
         type: Number,
         required: false,
         default: 2
+      },
+      isReply: {
+        type: Boolean,
+        required: false,
+        default: false
+      },
+      replyOf: {
+        type: String,
+        required: false
       }
     },
     {

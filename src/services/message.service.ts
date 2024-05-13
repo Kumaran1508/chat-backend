@@ -40,7 +40,7 @@ export default class MessageService {
      *  4. Check the receiver type.
      */
 
-    const messageDocument: any = {
+    let messageDocument: any = {
       source: message.source,
       destination: message.destination,
       destinationType: message.destinationType,
@@ -52,8 +52,13 @@ export default class MessageService {
       receivedAt: undefined,
       readAt: undefined,
       edited: false,
-      content: message.content
+      content: message.content,
     }
+    if (message.isReply) messageDocument = { isReply: message.isReply, ...messageDocument }
+    if (message.isReply && !message.replyOf) throw Error("Ivalid Request")
+    if (message.replyOf) messageDocument = { isReply: message.isReply, ...messageDocument }
+    /** TODO: Verify if the reply is from the same conversation */
+    if (message.isForwarded) messageDocument = { isForwarded: message.isForwarded, ...messageDocument }
     const result = await this.messageDao.create(messageDocument)
     return result
   }

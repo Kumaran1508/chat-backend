@@ -15,7 +15,9 @@ export interface Message {
   edited?: boolean
   attachmentId?: string
   isForwarded?: boolean
-  messageStatus: MessageStatus
+  messageStatus: MessageStatus,
+  isReply?: boolean
+  replyOf?: string
 }
 
 export interface MessageRequest {
@@ -27,13 +29,16 @@ export interface MessageRequest {
   sentAt: Date
   hasAttachment: boolean
   requestId: string
+  isForwarded?: boolean
+  isReply?: boolean
+  replyOf?: string
 }
 
 export interface MessageResponse extends Message {
   messageId: string
 }
 
-export interface MessageSchema extends Document, Message {}
+export interface MessageSchema extends Document, Message { }
 
 export enum MessageDestinationType {
   DM,
